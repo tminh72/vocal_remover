@@ -1,0 +1,25 @@
+﻿# Python cache
+__pycache__/
+*.pyc
+
+# Environment
+.venv/
+.venv*/
+venv/
+env/
+.env
+
+# Uploads
+data/
+uploads/
+outputs/
+sampledata/
+
+# Audio
+*.mp3
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/
