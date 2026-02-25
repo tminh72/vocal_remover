@@ -1,7 +1,7 @@
-fastapi==0.116.1
-uvicorn[standard]==0.35.0
-python-jose==3.5.0
-email-validator==2.2.0
-python-multipart==0.0.20
+fastapi==0.110.2
+uvicorn[standard]==0.29.0
+python-jose==3.3.0
+email-validator==2.1.1
+python-multipart==0.0.9
 pydub==0.25.1
-# audioop-lts==0.1.0
+spleeter==2.4.2

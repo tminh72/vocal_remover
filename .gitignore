@@ -18,6 +18,11 @@ sampledata/
 # Audio
 *.mp3
 
+# Pretrained models
+pretrained_models/
+pretrained/
+models/
+
 # Database
 *.db
 *.sqlite
