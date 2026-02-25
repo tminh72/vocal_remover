@@ -4,6 +4,8 @@ import uuid
 import shutil
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi_limiter.depends import RateLimiter
+from pyrate_limiter import Duration, Limiter, Rate
 from pydantic import BaseModel
 from app.core.security import get_current_user
 from app.db import get_conn
@@ -14,6 +16,12 @@ router = APIRouter()
 
 ALLOWED_EXTENSIONS = {".mp3", ".wav"}
 SOURCE_DIR = Path("data/source")
+
+_limiter = Limiter(Rate(2, Duration.SECOND * 30))
+
+
+def _rate_limit_callback(*_, **__) -> None:
+    raise HTTPException(status_code=429, detail="Please wait for the next attempt")
 
 
 class SeparateResponse(BaseModel):
@@ -38,7 +46,11 @@ def save(upload: UploadFile, dest_dir: Path = SOURCE_DIR) -> Path:
     return dest_path
 
 
-@router.post("/separate", response_model=SeparateResponse)
+@router.post(
+    "/separate",
+    response_model=SeparateResponse,
+    dependencies=[Depends(RateLimiter(limiter=_limiter, callback=_rate_limit_callback))],
+)
 def separate(
     payload: SeparateRequest,
     current_user: dict = Depends(get_current_user),
