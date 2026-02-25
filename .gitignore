@@ -17,6 +17,7 @@ sampledata/
 
 # Audio
 *.mp3
+*.wav
 
 # Pretrained models
 pretrained_models/
