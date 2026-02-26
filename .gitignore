@@ -12,6 +12,8 @@ env/
 # Audio
 *.mp3
 *.wav
+!data/sample/example.mp3
+!data/sample/warmup.mp3
 
 # Database
 *.db
