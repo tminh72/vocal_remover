@@ -33,11 +33,13 @@ All endpoints are under `/api/v1`.
 
 *Example: `http://127.0.0.1:8000/api/v1/login`*
 
+Quá trình khởi động, database sẽ tạo sẵn user với thông tin và form request bên dưới:
+
 Request:
 ```json
 {
   "email": "test@example.com",
-  "password": "password"
+  "password": "password123"
 }
 ```
 
@@ -95,6 +97,26 @@ Response:
 *Example: `http://127.0.0.1:8000/api/v1/history`*
 
 Trả về danh sách các tasks của user hiện tại.
+
+Response:
+```json
+[
+  {
+    "task_id": "uuid",
+    "status": "queued|processing|completed|failed",
+    "original_file_path": "path/to/file",
+    "vocal_path": "path/to/file",
+    "music_path": "path/to/file",
+  },
+  {
+    "task_id": "uuid",
+    "status": "queued|processing|completed|failed",
+    "original_file_path": "path/to/file",
+    "vocal_path": "path/to/file",
+    "music_path": "path/to/file",
+  }
+]
+```
 
 ## KẾT QUẢ
 Kết quả các file đã xử lý sẽ nằm ở đường dẫn:
