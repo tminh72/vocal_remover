@@ -1,29 +1,20 @@
-# Vocal Remover POC
+﻿# Vocal Remover
 
-FastAPI service that separates vocals and accompaniment using Spleeter, with async processing via Celery and Redis.
+API sử dụng FastAPI tách giọng hát và nhạc đệm bằng Spleeter, kết hợp xử lý bất đồng bộ thông qua Celery và Redis.
 
 ## Features
-- JWT login and authenticated endpoints
-- Async audio separation via Celery worker
+- Sử dụng JWT để bảo mật API
 - Task status and history
-- Simple rate limit on `/api/v1/separate` (2 requests per 30 seconds)
+- Tách nhạc dưới backgound bất đồng bộ thông qua Celery và Redis
+- Simple rate limit (2 requests mỗi 30 giây)
 
 ## Tech Stack
 - FastAPI
 - Celery + Redis
-- SQLite (local `database/app.db`)
-- Spleeter for audio separation
+- SQLite
+- Open-source [Spleeter](https://github.com/deezer/spleeter/tree/master) cho phần AI tách nhạc
 
-## Project Layout
-- `app/main.py` FastAPI app
-- `app/api/v1/` API routes
-- `app/services/audio_processing.py` Spleeter processing
-- `app/worker/` Celery worker
-- `data/` input/output audio data
-- `database/` SQLite DB
-
-## Prereqs
-- Docker Desktop
+![alt text](assets/arch.png)
 
 ## Quick Start (Docker Compose)
 ```bash
@@ -32,11 +23,15 @@ docker compose up --build
 
 The API will be available at `http://127.0.0.1:8000`.
 
+Đảm bảo có tệp `warmup.mp3` trong thư mục `data/sample/`. Ứng dụng sẽ chạy preload và tự động tải xuống weights mô hình. Nếu không, ứng dụng sẽ skip và sẽ tự động download trong lần chạy AI đầu tiên.
+
 ## API Overview
 All endpoints are under `/api/v1`.
 
 ### Auth
 `POST /login`
+
+*Example: `http://127.0.0.1:8000/api/v1/login`*
 
 Request:
 ```json
@@ -54,10 +49,13 @@ Response:
 }
 ```
 
-Use `Authorization: Bearer <token>` for protected routes.
+**Note**:
+ Sử dụng `Authorization: Bearer <access_token>` cho các API bảo mật liệt kê ở dưới.
 
 ### Audio Separation
 `POST /separate`
+
+*Example: `http://127.0.0.1:8000/api/v1/separate`*
 
 Request:
 ```json
@@ -67,9 +65,9 @@ Request:
 ```
 
 Notes:
-- File must exist in `data/sample/`.
-- Only `.mp3` is processed by the splitter.
-- Rate limit: 2 requests per 30 seconds.
+- File phải có sẵn ở folder `data/sample/`
+- Hiện tại chỉ xử lý được file `.mp3`.
+- Rate limit: tối đa 2 requests mỗi 30 giây.
 
 Response:
 ```json
@@ -80,6 +78,8 @@ Response:
 
 ### Status
 `GET /status/{task_id}`
+
+*Example: `http://127.0.0.1:8000/api/v1/status/<task_id>`*
 
 Response:
 ```json
@@ -92,16 +92,29 @@ Response:
 ### History
 `GET /history`
 
-Returns a list of recent tasks for the current user.
+*Example: `http://127.0.0.1:8000/api/v1/history`*
 
-## Data Paths
-Outputs are written under:
-- `data/output/<source_name>/vocals.wav`
-- `data/output/<source_name>/accompaniment.wav`
+Trả về danh sách các tasks của user hiện tại.
 
-## Environment Variables
-- `REDIS_URL` (default `redis://redis:6379/0`)
+## KẾT QUẢ
+Kết quả các file đã xử lý sẽ nằm ở đường dẫn:
+- Giọng nói: `data/output/<source_name>/vocals.wav`
+- Nhạc nền: `data/output/<source_name>/accompaniment.wav`
 
-## Development Notes
-- SQLite is used by both API and worker; heavy concurrency may hit locks.
-- The limiter uses `fastapi-limiter` 0.2.0 with `pyrate-limiter`.
+## TRẢ LỜI CÂU HỎI TƯ DUY
+### Concurrency
+Nếu 100 user cùng upload nhạc một lúc, hệ thống thiết kế có thể có dạng như sau:
+![alt text](assets/arch_scale.png)
+- Mô hình inference ở dạng batch (Batch Inference) giúp xử lý đồng thời nhiều request
+- Sử dụng Serving (Triton, BentoML, ...) để host các mô hình, có thể scale tự động cũng như xử lý lượng lớn request
+- Tăng số lượng các worker để tăng tốc độ lấy và xử lý dữ liệu chờ ở queue Redis
+
+### Scalability
+Nếu tập âm thanh dài hơn 10 phút:
+- Có thể xử lý bằng cách chia nhỏ các đoạn âm thanh (ví dụ chia thành 5 đoạn nhỏ, mỗi đoạn 2 phút)
+- Dùng mô hình với batchsize = 5 để gom 5 đoạn nhỏ này thành 1 request để xử lý đồng thời hoặc để ở queue để xử lý tuần tự
+
+### Model Optimization
+- Chuyển qua chạy ở chế độ GPU với phần cứng GPU
+- Convert về các dạng mô hình tham số nhẹ hơn (float32, float16, int8)
+- Convert về các dạng mô hình tối ưu riêng cho từng loại phần cứng (Onnx, TensorRT cho Nvidia, ...)
