@@ -7,9 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi_limiter.depends import RateLimiter
 from pyrate_limiter import Duration, Limiter, Rate
 from pydantic import BaseModel
+
 from app.core.security import get_current_user
 from app.db import get_conn
-from app.services.audio_processing import OUTPUT_DIR, SAMPLE_DIR
+from app.services.audio_processing import SAMPLE_DIR
 from app.worker.tasks import process_audio
 
 router = APIRouter()
