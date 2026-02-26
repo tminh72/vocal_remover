@@ -9,23 +9,11 @@ venv/
 env/
 .env
 
-# Uploads
-data/
-uploads/
-outputs/
-sampledata/
-
 # Audio
 *.mp3
 *.wav
-
-# Pretrained models
-pretrained_models/
-pretrained/
-models/
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
-database/
