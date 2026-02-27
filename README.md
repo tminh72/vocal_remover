@@ -61,6 +61,7 @@ Response:
 
 ### User Information
 `GET /me`
+
 *Example:*
 ```bash
 curl -X GET "http://127.0.0.1:8000/api/v1/me" \
@@ -159,6 +160,7 @@ Kết quả các file đã xử lý sẽ nằm ở đường dẫn:
 ## TRẢ LỜI CÂU HỎI TƯ DUY
 ### Concurrency
 Nếu 100 user cùng upload nhạc một lúc, hệ thống thiết kế có thể có dạng như sau:
+
 ![alt text](assets/arch_scale.png)
 - Mô hình inference ở dạng batch (Batch Inference) giúp xử lý đồng thời nhiều request
 - Sử dụng Serving (Triton, BentoML, ...) để host các mô hình, có thể scale tự động cũng như xử lý lượng lớn request
