@@ -3,7 +3,8 @@ import uuid
 
 import shutil
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from fastapi_limiter.depends import RateLimiter
 from pyrate_limiter import Duration, Limiter, Rate
 from pydantic import BaseModel
@@ -29,10 +30,6 @@ class SeparateResponse(BaseModel):
     task_id: str
 
 
-class SeparateRequest(BaseModel):
-    filename: str
-
-
 def save(upload: UploadFile, dest_dir: Path = SOURCE_DIR) -> Path:
     if Path(upload.filename).suffix.lower() != ".mp3":
         raise HTTPException(status_code=400, detail="Only .mp3")
@@ -53,17 +50,10 @@ def save(upload: UploadFile, dest_dir: Path = SOURCE_DIR) -> Path:
     dependencies=[Depends(RateLimiter(limiter=_limiter, callback=_rate_limit_callback))],
 )
 def separate(
-    payload: SeparateRequest,
+    file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user),
 ) -> SeparateResponse:
-    ext = Path(payload.filename).suffix.lower()
-
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Only .mp3 or .wav")
-
-    source_path = SAMPLE_DIR / payload.filename
-    if not source_path.exists():
-        raise HTTPException(status_code=404, detail="File not found in sampledata")
+    source_path = save(file, SOURCE_DIR)
 
     record_id = str(uuid.uuid4())
     task_id = str(uuid.uuid4())
@@ -89,3 +79,39 @@ def separate(
     process_audio.delay(record_id, str(source_path))
 
     return SeparateResponse(task_id=task_id)
+
+
+@router.get("/stream/{task_id}/{filename}")
+def stream_audio(
+    task_id: str,
+    filename: str,
+    current_user: dict = Depends(get_current_user),
+):
+    if filename not in {"vocals.wav", "accompaniment.wav"}:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    conn = get_conn()
+    row = conn.execute(
+        "SELECT status, vocal_path, music_path FROM audio_tasks WHERE task_id = ? AND user_id = ?",
+        (task_id, current_user["id"]),
+    ).fetchone()
+    conn.close()
+    
+    if not row:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if row["status"] != "completed":
+        raise HTTPException(status_code=400, detail="Task not completed")
+
+    if filename == "accompaniment.wav":
+        path = row["music_path"]
+    else:
+        path = row["vocal_path"]
+
+    if not path:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    file_path = Path(path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(file_path, media_type="audio/wav", filename=filename)

@@ -2,12 +2,20 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.db import init_db
 from app.services.audio_processing import warmup_model
 
 app = FastAPI(title="Vocal Remover POC")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(api_router, prefix="/api/v1")
 
 
@@ -17,3 +25,7 @@ async def on_startup() -> None:
     if os.getenv("WARMUP_ON_START", "true").lower() == "true":
         sample_path = os.getenv("WARMUP_SAMPLE", "data/sample/warmup.mp3")
         warmup_model(Path(sample_path))
+
+
+
+
