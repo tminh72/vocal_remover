@@ -31,9 +31,14 @@ All endpoints are under `/api/v1`.
 ### Auth
 `POST /login`
 
-*Example: `http://127.0.0.1:8000/api/v1/login`*
+Quá trình khởi động, database sẽ tạo sẵn user với thông tin và form request như sau:
 
-Quá trình khởi động, database sẽ tạo sẵn user với thông tin và form request bên dưới:
+*Example:* 
+```bash 
+curl -X POST "http://127.0.0.1:8000/api/v1/login" \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"test@example.com\",\"password\":\"password123\"}"
+```
 
 Request:
 ```json
@@ -54,11 +59,31 @@ Response:
 **Note**:
  Sử dụng `Authorization: Bearer <access_token>` cho các API bảo mật liệt kê ở dưới.
 
+### User Information
+`GET /me`
+*Example:*
+```bash
+curl -X GET "http://127.0.0.1:8000/api/v1/me" \
+  -H "Authorization: Bearer <access_token>"
+```
+
+Response:
+```json
+{
+  "email": "test@example.com",
+  "credits": 10
+}
+```
 ### Audio Separation
 `POST /separate`
 
-*Example: `http://127.0.0.1:8000/api/v1/separate`*
-
+*Example:*
+```bash
+curl -X POST "http://127.0.0.1:8000/api/v1/separate" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access_token>" \
+  -d "{\"filename\":\"example.mp3\"}"
+```
 Request:
 ```json
 {
@@ -81,7 +106,11 @@ Response:
 ### Status
 `GET /status/{task_id}`
 
-*Example: `http://127.0.0.1:8000/api/v1/status/<task_id>`*
+*Example:*
+```bash
+curl -X GET "http://127.0.0.1:8000/api/v1/status/<task_id>" \
+  -H "Authorization: Bearer <access_token>"
+```
 
 Response:
 ```json
@@ -94,7 +123,11 @@ Response:
 ### History
 `GET /history`
 
-*Example: `http://127.0.0.1:8000/api/v1/history`*
+*Example:*
+```bash
+curl -X GET "http://127.0.0.1:8000/api/v1/history" \
+  -H "Authorization: Bearer <access_token>"
+```
 
 Trả về danh sách các tasks của user hiện tại.
 
