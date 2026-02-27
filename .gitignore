@@ -15,6 +15,9 @@ env/
 !data/sample/example.mp3
 !data/sample/warmup.mp3
 
+# Pretrained models
+pretrained_models/
+
 # Database
 *.db
 *.sqlite
