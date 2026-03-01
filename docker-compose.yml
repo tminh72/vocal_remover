@@ -16,7 +16,7 @@ services:
 
   worker:
     build: .
-    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO", "--concurrency=4"]
+    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO", "--concurrency=1"]
     volumes:
       - ./app:/app/app
       - ./data:/app/data
@@ -32,11 +32,6 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
-
-  fe:
-    image: vocal-remover-fe
-    ports:
-      - "8080:80"
 
 volumes:
   redis-data:
