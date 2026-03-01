@@ -16,7 +16,7 @@ services:
 
   worker:
     build: .
-    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO", "--concurrency=4"]
+    command: ["celery", "-A", "app.worker.celery_app", "worker", "--loglevel=INFO", "--concurrency=1"]
     volumes:
       - ./data:/app/data
       - ./database:/app/database
