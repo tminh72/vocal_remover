@@ -7,7 +7,6 @@ services:
     volumes:
       - ./data:/app/data
       - ./database:/app/database
-      - ./pretrained_models:/app/pretrained_models
     environment:
       - REDIS_URL=redis://redis:6379/0
     depends_on:
@@ -20,7 +19,6 @@ services:
     volumes:
       - ./data:/app/data
       - ./database:/app/database
-      - ./pretrained_models:/app/pretrained_models
     environment:
       - REDIS_URL=redis://redis:6379/0
     depends_on:

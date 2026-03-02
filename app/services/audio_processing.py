@@ -29,17 +29,3 @@ def split_to_vocal_and_accompaniment(source_path: Path, output_dir: Path) -> tup
 
     return vocal_path, accompaniment_path
 
-
-def warmup_model(sample_path: Path) -> None:
-    if not sample_path.exists():
-        print(f"Warmup skipped: sample not found at {sample_path}")
-        return
-
-    temp_dir = Path(tempfile.mkdtemp(prefix="spleeter_warmup_"))
-    try:
-        split_to_vocal_and_accompaniment(sample_path, temp_dir)
-        print("Warmup completed")
-    except Exception as exc:
-        print(f"Warmup failed: {exc}")
-    finally:
-        shutil.rmtree(temp_dir, ignore_errors=True)

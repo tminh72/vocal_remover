@@ -23,8 +23,6 @@ docker compose up --build
 
 The API will be available at `http://127.0.0.1:8000`.
 
-Tối ưu khi có tệp `warmup.mp3` trong thư mục `data/sample/`. Ứng dụng sẽ chạy preload và tự động tải xuống weights mô hình. Nếu không, ứng dụng sẽ skip và sẽ tự động download trong lần chạy AI đầu tiên.
-
 ## API Overview
 All endpoints are under `/api/v1`.
 
