@@ -32,21 +32,6 @@ class SeparateResponse(BaseModel):
 class SeparateRequest(BaseModel):
     filename: str
 
-
-def save(upload: UploadFile, dest_dir: Path = SOURCE_DIR) -> Path:
-    if Path(upload.filename).suffix.lower() != ".mp3":
-        raise HTTPException(status_code=400, detail="Only .mp3")
-
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    safe_name = f"{uuid.uuid4()}.mp3"
-    dest_path = dest_dir / safe_name
-
-    with dest_path.open("wb") as f:
-        shutil.copyfileobj(upload.file, f)
-
-    return dest_path
-
-
 @router.post(
     "/separate",
     response_model=SeparateResponse,
